@@ -15,3 +15,6 @@ it. It implement my "rule" to cook food I haven't had in a while, accounts for t
 and the environmental impact of the meals, and integrates with a web service that I can 
 easily use on my phone (I initially wanted to do this in google Keep, but there is no 
 official API for this google service, so I went with google Tasks instead).
+
+Alongside the sript a laso built a personal collection of recipies and ingredients, which is 
+also quite convenient on its own. This collection is also included in the project.
