@@ -1,0 +1,207 @@
+from __future__ import print_function
+import pandas as pd
+import numpy as np
+import random
+import pickle
+import os.path
+from googleapiclient.discovery import build
+from google_auth_oauthlib.flow import InstalledAppFlow
+from google.auth.transport.requests import Request
+import re
+
+
+# If modifying these scopes, delete the file token.pickle.
+SCOPES = ['https://www.googleapis.com/auth/tasks']
+
+def computeUpTick():
+	# load the data from a csv file
+	data = pd.read_csv("meals.csv")
+	
+	# load the data into pandas' Series
+	meals = data["Dish"]
+	ingredients = data["Ingredients"]
+	ingredientsList = data["Ingredients"].str.split(", ")
+	upTick = data["upTick"]
+	
+	# setup variables for the weighing
+	N = len(meals)
+	p_v = 3 / 4 # weight for the vegetarian meals
+	p_h = 8 / 7 # weight for the more complicated meal
+	meats = ["meat", "beef", "pork", "chicken", "bacon", "ham", "sausage", "steak"]
+	
+	# instantiate the variables for the number of  the various combinations of meal types
+	veg_hard, veg_easy, meat_easy, meat_hard = 0, 0, 0, 0
+	veg_hard_i, veg_easy_i, meat_easy_i, meat_hard_i = [], [], [], [] # indices of the specific meals
+	# count the meals with meat in them
+	meat_meals = 0
+	for meat in meats:
+		meat_meals += ingredients.str.count(meat, re.I)
+	
+	hard_meals = ingredientsList.apply(lambda x: len(x) > 7)
+	for i in range(N):
+		if meat_meals[i] == 0 and hard_meals[i] == True:
+			veg_hard += 1
+			veg_hard_i.append(i)
+		elif meat_meals[i] == 0 and hard_meals[i] == False:
+			veg_easy += 1
+			veg_easy_i.append(i)			
+		elif meat_meals[i] != 0 and hard_meals[i] == True:
+			meat_hard += 1
+			meat_hard_i.append(i)
+		else:
+			meat_easy += 1
+			meat_easy_i.append(i)
+	# calculate the weight for the easy meals
+	p_e = 1 / (meat_easy + veg_easy) * (N - (meat_hard + veg_hard) * p_h)
+	# calculate the weight for the meat including meals
+	p_m = (N - veg_hard * p_v * p_h - veg_easy * p_v * p_e) / (meat_easy * p_e + meat_hard * p_h)
+	# update the the upticks of the meals
+	upTick.update(pd.Series([round(N / 5 * p_v * p_h, 2) for i in range(veg_hard)], index = veg_hard_i))
+	upTick.update(pd.Series([round(N / 5 * p_v * p_e, 2) for i in range(veg_easy)], index = veg_easy_i))
+	upTick.update(pd.Series([round(N / 5 * p_m * p_h, 2) for i in range(meat_hard)], index = meat_hard_i))
+	upTick.update(pd.Series([round(N / 5 * p_m * p_e, 2) for i in range(meat_easy)], index = meat_easy_i))
+	
+	output = pd.concat([meals, ingredients, freqScore, upTick], axis = 1)
+	output.to_csv("meals.csv")
+
+def pickMenuOffline():
+	# load the data from a csv file
+	data = pd.read_csv("meals.csv")
+	
+	# load the data into pandas' Series
+	meals = data["Dish"]
+	ingredients = data["Ingredients"]
+	ingredientsList = data["Ingredients"].str.split(", ")
+	freqScore = data["frequencyScore"]
+	upTick = data["upTick"]
+	
+	# pick a random sample from the top 9 meals with the least frequency score
+	pick = freqScore.take(freqScore.argsort()).head(9).sample(5).index
+	# update the frequency score of the chosen meals by their respective uptick value and subtract 
+	# one from the rest
+	freqScore = freqScore.add(upTick.take(pick), fill_value = -1)
+	freqScore.name = "frequencyScore"
+	# combine the updated data and save it to the csv file
+	output = pd.concat([meals, ingredients, freqScore, upTick], axis = 1)
+	output.to_csv("meals.csv")
+	# create a manu for the week with the list of ingredients
+	menu = [meals.take(pick).to_numpy(), ingredientsList.take(pick).to_numpy()]
+	
+	#printing method for the meals and ingredients for each meal
+	for i in range(len(menu[0])):
+		print("Meal: {}".format(menu[0][i]))
+		print("\tIngredients: "+", ".join(menu[1][i]))
+
+def pickMenu():
+	# load the data from a csv file
+	data = pd.read_csv("meals.csv")
+	
+	# load the data into pandas' Series
+	meals = data["Dish"]
+	ingredients = data["Ingredients"]
+	ingredientsList = data["Ingredients"].str.split(", ")
+	freqScore = data["frequencyScore"]
+	upTick = data["upTick"]
+	
+	# pick a random sample from the top 9 meals with the least frequency score
+	pick = freqScore.take(freqScore.argsort()).head(9).sample(5).index
+	# update the frequency score of the chosen meals by their respective uptick value and subtract 
+	# one from the rest
+	freqScore = freqScore.add(upTick.take(pick), fill_value = -1)
+	freqScore.name = "frequencyScore"
+	# combine the updated data and save it to the csv file
+	output = pd.concat([meals, ingredients, freqScore, upTick], axis = 1)
+	output.to_csv("meals.csv")
+	# create a manu for the week with the list of ingredients
+	menu = [meals.take(pick).to_numpy(), ingredientsList.take(pick).to_numpy()]
+	
+	# google tasks integration
+	creds = None
+	# The file token.pickle stores the user's access and refresh tokens, and is
+	# created automatically when the authorization flow completes for the first
+	# time.
+	pickleF = f'token_FoodPicker.pickle'
+	if os.path.exists(pickleF):
+		# open the file with the token and load the information
+		with open(pickleF, 'rb') as token:
+			creds = pickle.load(token)
+	# ask for credentials if they are not valid
+	if not creds or not creds.valid:
+		# refresh th e credentials if they are expired
+		if creds and creds.expired and creds.refresh_token:
+			creds.refresh(Request())
+		# connect to the server using the personal token
+		else:
+			flow = InstalledAppFlow.from_client_secrets_file('tokens/foodPickerCred.json', SCOPES)
+			creds = flow.run_local_server()
+			# Save the credentials for the next run
+			with open(pickleF, 'wb') as token:
+				pickle.dump(creds, token)
+	#start the google tasks api
+	service = build('tasks', 'v1', credentials=creds)
+	#get the tasklist of the user
+	tasklists = service.tasklists().list().execute()
+	
+	exists = False # boolean that stores if the tasklist "Menu for the week" exists
+	menuID = "" # the id of the "Menu for the week" tasklist
+	#check if the takslist "Menu for the Week" is in the task lists if yes store its tasklistID
+	for tasklist in tasklists.get("items"):
+		if tasklist["title"] == "Menu for the Week":
+			exists = True
+			menuID = tasklist["id"]
+		else:
+			pass
+	
+	menuAndFood = None
+	#if tasklist "Menu for the Week" doesn't exist create it and save its tasklistID
+	if menuID == "" and exists == False: 
+		menuAndFood = service.tasklists().insert(body = {"title": "Menu for the Week"}).execute()
+		menuID = menuAndFood["id"]
+	
+	#start creating the menu list
+	tasks = service.tasks().list(tasklist = menuID).execute()
+	ingredID = ""
+	#check if the "ingredientsToBuy" task was created if yes save its taskID if not create the task and save its ID 
+	if tasks.get("items"):
+		for task in tasks.get("items"):
+			if task["title"] == "ingredientsToBuy":
+				exists = True
+				ingredID = task["id"]
+				break
+			else:
+				ingredList = service.tasks().insert(
+						tasklist = menuID, 
+						body = {"title": "ingredientsToBuy"}
+						).execute()
+				ingredID = ingredList["id"]
+	else:
+		ingredList = service.tasks().insert(
+				tasklist = menuID, 
+				body = {"title": "ingredientsToBuy"}
+				).execute()
+		ingredID = ingredList["id"]
+	#instantiate the list for ingredients			
+	ingreds = []
+	for i in range(len(menu[0])):
+		#add the meals from the picked menu to google tasks one by one
+		_ = service.tasks().insert(
+			tasklist = menuID, 
+			body = {"title": menu[0][i]}
+			).execute()
+		# add the ingredients of the meals to the "ingredientsToBuy" task
+		for j in range(len(menu[1][i])):
+			#check if the ingredient has already been added to the task
+			if not menu[1][i][j] in ingreds:
+				_ = service.tasks().insert(
+					tasklist = menuID,
+					body = {"title": menu[1][i][j]},
+					parent = ingredID
+				).execute()
+				#add the ingredient to the list of already written ingredients
+				ingreds.append(menu[1][i][j])
+
+def main():
+	pickMenu()
+	
+if __name__ == "__main__":
+	main()

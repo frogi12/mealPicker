@@ -1,0 +1,48 @@
+,Dish,Ingredients,frequencyScore,upTick
+0,perkelt,"onions, paprika, chickenThighs, cream, whiteWine, pasta, flour",12.66,11.86
+1,smazak,"cheese, breadcrumbs, potatoes, cranberries, eggs, flour",7.42,6.62
+2,mac&cheese,"pasta, gruierre, cheddar, cream, flour, butter",2.82,6.62
+3,rybaPoNovohradsku,"halfGritFlour, paprika, fish, potatoes, garlic, butter",2.82,6.62
+4,svieckova,"carrots, celeryRoot, parsley, steakFillet, cream, onions, eggs, breadRolls, halfGrittFlour, flour, backingPowder",9.12,8.06
+5,franczuzske,"potatoes, bacon, sausage, eggs",5.82,6.62
+6,kynuteKnedliky,"yeast, flour, milk, berries, quark, butter, cream, sugar",6.6,8.06
+7,crepes,"flour, milk, butter, eggs, jam",2.82,6.62
+8,palacinken,"flour, milk, butter, eggs, jam",2.82,6.62
+9,livance,"flour, milk, butter, eggs, jam, yeast",0.8200000000000001,6.62
+10,chickenSteak,"chicken, potatoes, salad",-2.1999999999999993,11.86
+11,beefSteak,"beef, potatoes, butter",2.8000000000000007,11.86
+12,gulas,"meat, onions, garlic, paprika, chilli, potatoes, bread, oil, redWine",3.130000000000001,14.43
+13,carbonara,"bacon, eggs, butter, spaghetti, parmigiano",2.82,6.62
+14,bolognese,"carrots, celery, groundMeat, onions, bacon, redWine, passata, stock",3.130000000000001,14.43
+15,chickenWings,"chickenWings, bread, salad",13.66,11.86
+16,sunkafleky,"pasta, eggs, smokedMeat, bacon, vegeta, milk",13.66,11.86
+17,schnitzel,"chicken, potatoes, pickels, breadcrumbs, eggs, flour",3.8000000000000007,11.86
+18,rajska,"passata, apple, onions, butter, milk, basil, thyme, groundMeat, eggs, halfGritFlour, flour, bakingPowder, breadRolls",5.130000000000001,14.43
+19,swedischMeatballs,"potatoes, groundMeat, onions, cream, breadCrumbs, cranbarries",13.66,11.86
+20,cevabcici,"potatoes, groundMeat, onions, breadcrumbs",0.8000000000000007,11.86
+21,fasirky,"potatoes, groundMeat, onions, cheese, breadcrumbs, eggs, parsley",13.66,11.86
+22,pelmeni,"groundMeat, onions, garlic, flour, eggs, sourCream",3.8599999999999994,11.86
+23,perky,"potatoes, halfGritFlour, plumbJam",6.82,6.62
+24,halusky,"brymzen, potatoes, flour, eggs, bacon",4.82,6.62
+25,spezle,"halfGritFlour, cheese, butter, onions, eggs",5.82,6.62
+26,ceburek,"groundMeat, onions, garlic, flour, eggs, oil",13.66,11.86
+27,stroganov,"beef, pickles, onions, rice",3.8000000000000007,11.86
+28,chickenOnLeek,"leek, cheese, ham, chickenThighs, parsley, rice",13.66,11.86
+29,rizotto,"rice, celery, onions, whiteWine, parmigiano, butter",4.82,6.62
+30,cheesyPasta,"cheese, pasta, ham, breadcrumbs, oliveOil, parmigiano, butter",9.240000000000002,6.62
+31,chickenOnPears,"chicken, pearPerserve, rice, onions, butter",2.8000000000000007,11.86
+32,ratatouille,"eggplant, zucchini, bellPepper, onions, tomatoes, leek, thyme, celery, bayLeaf, parsley, oliveOil",5.6,8.06
+33,koprovka,"dill, flour, cream, vinegar, groundMeat, potatoes, gritFlour, grits, eggs",5.130000000000001,14.43
+34,escoffier,"onions, butter, flour, nutmeg, eggs",5.82,6.62
+35,backedCotlett,"ketchup, mustard, cheese, marjoram, eggs, pork, potatoes",3.8000000000000007,11.86
+36,lasagna,"butter, flour, carrots, tomatoes, milk, groundMeat, pasta, garlic, cheddar, passata, redWine, celery",5.130000000000001,14.43
+37,granatyr,"potatoes, pasta, paprika, onion, blackPepper",1.62,6.62
+38,pizza,"passata, flour, yeast, basil, mozzarella, garlic, oregano, parmigiano, oliveOil",3.0600000000000005,8.06
+39,bakedSalmon,"salad, salmon, salt, tomatoes, potatoes, lemon, chilly",5.82,6.62
+40,veggieBurrito,"tortilla, beans, cheese, tomatoes, limes, parlsey, rice, avocado, onions, sweetCorn",8.6,8.06
+41,potatoAlForno,"potatoes, fenil, onions, parmigiano, cream, bayLeaf, milk, rosemary, nutmeg, garlic",5.6,8.06
+42,avoQuesadillas,"avocado, bellPeppers, mint, tortillas, tabasco, sourCream, limes, LeicesterCheese",3.0600000000000005,8.06
+43,broccoliCheesePierogi,"flour, eggs, broccoli, cheddar, chives, sourCream, garlic, cherryTomatoes",4.0600000000000005,8.06
+44,tunaPasta,"brocolli, garlic, chilly, peppers, pasta, parmegiano, tuna",3.62,6.62
+45,cauliflowerPasta,"bread, garlic, cauliflower, onion, milk, spaghetti, cheddar",9.740000000000002,6.62
+46,chickpeaCurry,"cauliflowwer, curry, flour, chickpeas, coconutMilk, tomatoes, mint, chilly",5.0600000000000005,8.06
