@@ -1,4 +1,4 @@
-# mealPicker - a personal menu currator
+# mealPicker - a personal menu curator
 
 This project came about during the pandemic as an automation for meal planing. I was fed up
 with having to come up with meal ideas on the spot when I went shopping. I tried to have
