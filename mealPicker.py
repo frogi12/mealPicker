@@ -12,7 +12,7 @@ SCOPES = ['https://www.googleapis.com/auth/tasks']
 
 def computeUpTick():
 	# load the data from a csv file
-	data = pd.read_csv("meals.csv")
+	data = pd.read_csv("meals_test.csv")
 	
 	# load the data into pandas' Series
 	meals = data["Dish"]
@@ -68,11 +68,11 @@ def computeUpTick():
 	)
 	
 	output = pd.concat([meals, ingredients, freqScore, upTick], axis = 1)
-	output.to_csv("meals.csv")
+	output.to_csv("meals_test.csv")
 
 def pickMenuOffline():
 	# load the data from a csv file
-	data = pd.read_csv("meals.csv")
+	data = pd.read_csv("meals_test.csv")
 	
 	# load the data into pandas' Series
 	meals = data["Dish"]
@@ -89,7 +89,7 @@ def pickMenuOffline():
 	freqScore.name = "frequencyScore"
 	# combine the updated data and save it to the csv file
 	output = pd.concat([meals, ingredients, freqScore, upTick], axis = 1)
-	output.to_csv("meals.csv")
+	output.to_csv("meals_test.csv")
 	# create a manu for the week with the list of ingredients
 	menu = [meals.take(pick).to_numpy(), ingredientsList.take(pick).to_numpy()]
 	
@@ -100,7 +100,7 @@ def pickMenuOffline():
 
 def pickMenu():
 	# load the data from a csv file
-	data = pd.read_csv("meals.csv")
+	data = pd.read_csv("meals_test.csv")
 	
 	# load the data into pandas' Series
 	meals = data["Dish"]
@@ -117,9 +117,9 @@ def pickMenu():
 	freqScore.name = "frequencyScore"
 	# combine the updated data and save it to the csv file
 	output = pd.concat([meals, ingredients, freqScore, upTick], axis = 1)
-	output.to_csv("meals.csv")
+	output.to_csv("meals_test.csv")
 	# create a manu for the week with the list of ingredients
-	menu = [meals.take(pick).to_numpy(), ingredientsList.take(pick).to_numpy()]
+	menu = [meals.take(pick).array, ingredientsList.take(pick).array]
 	
 	# google tasks integration
 	creds = None
@@ -151,7 +151,7 @@ def pickMenu():
 	exists = False # boolean that stores if the tasklist "Menu for the week" exists
 	menuID = "" # the id of the "Menu for the week" tasklist
 	#check if the takslist "Menu for the Week" is in the task lists if yes store its tasklistID
-	for tasklist in tasklists.get("items"):
+	for tasklist in tasklists["items"]:
 		if tasklist["title"] == "Menu for the Week":
 			exists = True
 			menuID = tasklist["id"]
@@ -160,34 +160,44 @@ def pickMenu():
 	
 	menuAndFood = None
 	#if tasklist "Menu for the Week" doesn't exist create it and save its tasklistID
-	if menuID == "" and exists == False: 
+	if menuID == "" and not exists: 
 		menuAndFood = service.tasklists().insert(body = {"title": "Menu for the Week"}).execute()
 		menuID = menuAndFood["id"]
 	
 	#start creating the menu list
-	tasks = service.tasks().list(tasklist = menuID).execute()
+	tasks = service.tasks().list(tasklist = menuID, maxResults = 100).execute()
 	ingredID = ""
 	#check if the "ingredientsToBuy" task was created if yes save its taskID if not create the task and save its ID 
-	if tasks.get("items"):
-		for task in tasks.get("items"):
+	while True:
+		for task in tasks["items"]:
 			if task["title"] == "ingredientsToBuy":
-				exists = True
 				ingredID = task["id"]
-				break
-			else:
-				ingredList = service.tasks().insert(
-						tasklist = menuID, 
-						body = {"title": "ingredientsToBuy"}
-						).execute()
-				ingredID = ingredList["id"]
-	else:
+		page = tasks.get("nextPageToken")
+		if ingredID != "" or not page:
+			break
+		tasks = service.tasks().list(tasklist = menuID, pageToken = page).execute()
+		page = tasks.get("nextPageToken")
+	if ingredID == "":
 		ingredList = service.tasks().insert(
 				tasklist = menuID, 
 				body = {"title": "ingredientsToBuy"}
 				).execute()
 		ingredID = ingredList["id"]
-	#instantiate the list for ingredients			
+	#instantiate the list for ingredients
 	ingreds = []
+	
+	tasks = service.tasks().list(tasklist = menuID, maxResults = 100).execute()
+	while True:
+		for task in tasks["items"]:
+			if task.get("parent") == ingredID:
+				ingreds.append(task["title"])
+		page = tasks.get("nextPageToken")
+		if not page:
+			break
+		tasks = service.tasks().list(tasklist = menuID, pageToken = page).execute()
+		
+	print(ingreds)
+	
 	for i in range(len(menu[0])):
 		#add the meals from the picked menu to google tasks one by one
 		_ = service.tasks().insert( tasklist = menuID, body = {"title": menu[0][i]}).execute()
@@ -221,13 +231,14 @@ def main(argv):
 	if args["calculate_uptick"]:
 		print("You chose to calculate the uptick of the meals.")
 		computeUpTick()
-	if args["pick_menu_offline"]:
-		print("You chose to generate the menu offline.")
-		pickMenuOffline()
 	else:
-		print("You chose to generate the menu and upload it to google tasks.")
-		pickMenu()
-		print("Done.")
+		if args["pick_menu_offline"]:
+			print("You chose to generate the menu offline.")
+			pickMenuOffline()
+		else:
+			print("You chose to generate the menu and upload it to google tasks.")
+			pickMenu()
+			print("Done.")
 	
 if __name__ == "__main__":
 	main(sys.argv[1:])
