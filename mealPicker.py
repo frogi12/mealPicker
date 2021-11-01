@@ -1,13 +1,10 @@
 from __future__ import print_function
 import pandas as pd
 import numpy as np
-import random
-import pickle
-import os.path
+import pickle, re, random, argparse, os.path, sys
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
-import re
 
 
 # If modifying these scopes, delete the file token.pickle.
@@ -21,6 +18,7 @@ def computeUpTick():
 	meals = data["Dish"]
 	ingredients = data["Ingredients"]
 	ingredientsList = data["Ingredients"].str.split(", ")
+	freqScore = data["frequencyScore"]
 	upTick = data["upTick"]
 	
 	# setup variables for the weighing
@@ -56,10 +54,18 @@ def computeUpTick():
 	# calculate the weight for the meat including meals
 	p_m = (N - veg_hard * p_v * p_h - veg_easy * p_v * p_e) / (meat_easy * p_e + meat_hard * p_h)
 	# update the the upticks of the meals
-	upTick.update(pd.Series([round(N / 5 * p_v * p_h, 2) for i in range(veg_hard)], index = veg_hard_i))
-	upTick.update(pd.Series([round(N / 5 * p_v * p_e, 2) for i in range(veg_easy)], index = veg_easy_i))
-	upTick.update(pd.Series([round(N / 5 * p_m * p_h, 2) for i in range(meat_hard)], index = meat_hard_i))
-	upTick.update(pd.Series([round(N / 5 * p_m * p_e, 2) for i in range(meat_easy)], index = meat_easy_i))
+	upTick.update(
+		pd.Series([round(N / 5 * p_v * p_h, 2) for i in range(veg_hard)], index = veg_hard_i)
+	)
+	upTick.update(
+		pd.Series([round(N / 5 * p_v * p_e, 2) for i in range(veg_easy)], index = veg_easy_i)
+	)
+	upTick.update(
+		pd.Series([round(N / 5 * p_m * p_h, 2) for i in range(meat_hard)], index = meat_hard_i)
+	)
+	upTick.update(
+		pd.Series([round(N / 5 * p_m * p_e, 2) for i in range(meat_easy)], index = meat_easy_i)
+	)
 	
 	output = pd.concat([meals, ingredients, freqScore, upTick], axis = 1)
 	output.to_csv("meals.csv")
@@ -184,10 +190,7 @@ def pickMenu():
 	ingreds = []
 	for i in range(len(menu[0])):
 		#add the meals from the picked menu to google tasks one by one
-		_ = service.tasks().insert(
-			tasklist = menuID, 
-			body = {"title": menu[0][i]}
-			).execute()
+		_ = service.tasks().insert( tasklist = menuID, body = {"title": menu[0][i]}).execute()
 		# add the ingredients of the meals to the "ingredientsToBuy" task
 		for j in range(len(menu[1][i])):
 			#check if the ingredient has already been added to the task
@@ -200,8 +203,31 @@ def pickMenu():
 				#add the ingredient to the list of already written ingredients
 				ingreds.append(menu[1][i][j])
 
-def main():
-	pickMenu()
+def main(argv):
+	parser = argparse.ArgumentParser(description = "Meal picker a script that genrates a menu for \
+	the work week based on given list of meals. It takes the dificulty and the environmental inpact \
+	of the meals into account and suggests them less frequently.")
+	parser.add_argument(
+		'-u', "--calculate_uptick", action = "store_true", 
+		help = 'recalculate the uptick for the meals and store it to the csv file with meals'
+	)
+	parser.add_argument(
+		'-o', "--pick_menu_offline", action = "store_true", 
+		help = 'generate a five meal menu from the 7 meals with the lowest frequency score and print \
+		it to the console'
+	)
+	
+	args = vars(parser.parse_args(argv))
+	if args["calculate_uptick"]:
+		print("You chose to calculate the uptick of the meals.")
+		computeUpTick()
+	if args["pick_menu_offline"]:
+		print("You chose to generate the menu offline.")
+		pickMenuOffline()
+	else:
+		print("You chose to generate the menu and upload it to google tasks.")
+		pickMenu()
+		print("Done.")
 	
 if __name__ == "__main__":
-	main()
+	main(sys.argv[1:])
