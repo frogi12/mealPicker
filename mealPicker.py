@@ -151,7 +151,7 @@ def pickMenu():
 	exists = False # boolean that stores if the tasklist "Menu for the week" exists
 	menuID = "" # the id of the "Menu for the week" tasklist
 	#check if the takslist "Menu for the Week" is in the task lists if yes store its tasklistID
-	for tasklist in tasklists["items"]:
+	for tasklist in tasklists.get("items"):
 		if tasklist["title"] == "Menu for the Week":
 			exists = True
 			menuID = tasklist["id"]
@@ -169,7 +169,7 @@ def pickMenu():
 	ingredID = ""
 	#check if the "ingredientsToBuy" task was created if yes save its taskID if not create the task and save its ID 
 	while True:
-		for task in tasks["items"]:
+		for task in tasks.get("items"):
 			if task["title"] == "ingredientsToBuy":
 				ingredID = task["id"]
 		page = tasks.get("nextPageToken")
@@ -188,16 +188,14 @@ def pickMenu():
 	
 	tasks = service.tasks().list(tasklist = menuID, maxResults = 100).execute()
 	while True:
-		for task in tasks["items"]:
+		for task in tasks.get("items"):
 			if task.get("parent") == ingredID:
 				ingreds.append(task["title"])
 		page = tasks.get("nextPageToken")
 		if not page:
 			break
 		tasks = service.tasks().list(tasklist = menuID, pageToken = page).execute()
-		
-	print(ingreds)
-	
+			
 	for i in range(len(menu[0])):
 		#add the meals from the picked menu to google tasks one by one
 		_ = service.tasks().insert( tasklist = menuID, body = {"title": menu[0][i]}).execute()
