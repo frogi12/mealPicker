@@ -23,7 +23,7 @@ def computeUpTick():
 	
 	# setup variables for the weighing
 	N = len(meals)
-	p_v = 3 / 4 # weight for the vegetarian meals
+	p_v = 1 / 2 # weight for the vegetarian meals
 	p_h = 8 / 7 # weight for the more complicated meal
 	meats = ["meat", "beef", "pork", "chicken", "bacon", "ham", "sausage", "steak"]
 	
@@ -168,37 +168,64 @@ def pickMenu():
 	tasks = service.tasks().list(tasklist = menuID, maxResults = 100).execute()
 	ingredID = ""
 	#check if the "ingredientsToBuy" task was created if yes save its taskID if not create the task and save its ID 
-	while True:
+	
+	for task in tasks.get("items"):
+		if task["title"] == "ingredientsToBuy":
+			ingredID = task.get("id")
+			break
+	page = tasks.get("nextPageToken")
+	tasks = service.tasks().list(
+		tasklist = menuID, pageToken = page, maxResults = 100
+	).execute()
+	
+	while ingredID == "" and page != None:
 		for task in tasks.get("items"):
 			if task["title"] == "ingredientsToBuy":
 				ingredID = task["id"]
+				break
+		tasks = service.tasks().list(
+			tasklist = menuID, pageToken = page, maxResults = 100
+		).execute()
 		page = tasks.get("nextPageToken")
-		if ingredID != "" or not page:
-			break
-		tasks = service.tasks().list(tasklist = menuID, pageToken = page).execute()
-		page = tasks.get("nextPageToken")
+	
 	if ingredID == "":
 		ingredList = service.tasks().insert(
 				tasklist = menuID, 
 				body = {"title": "ingredientsToBuy"}
 				).execute()
 		ingredID = ingredList["id"]
-	#instantiate the list for ingredients
+	#instantiate the lists for ingredients and meals
 	ingreds = []
+	meals = []
 	
+	#go through the the added ingredients in the shopping list and append them to 
+	#	the ingerdient list to prevent douplicates
 	tasks = service.tasks().list(tasklist = menuID, maxResults = 100).execute()
-	while True:
+	page = tasks.get("nextPageToken")
+	
+	for task in tasks.get("items"):
+		if task.get("parent") == ingredID:
+			ingreds.append(task["title"])
+		elif task.get("parent") == None:
+			meals.append(task["title"])
+		tasks = service.tasks().list(
+			tasklist = menuID, pageToken = page, maxResults = 100
+		).execute()
+		page = tasks.get("nextPageToken")
+	
+	while page != None:
 		for task in tasks.get("items"):
 			if task.get("parent") == ingredID:
 				ingreds.append(task["title"])
+		tasks = service.tasks().list(
+			tasklist = menuID, pageToken = page, maxResults = 100
+		).execute()
 		page = tasks.get("nextPageToken")
-		if not page:
-			break
-		tasks = service.tasks().list(tasklist = menuID, pageToken = page).execute()
-			
+		
 	for i in range(len(menu[0])):
 		#add the meals from the picked menu to google tasks one by one
-		_ = service.tasks().insert( tasklist = menuID, body = {"title": menu[0][i]}).execute()
+		if not menu[0][i] in meals:
+			_ = service.tasks().insert( tasklist = menuID, body = {"title": menu[0][i]}).execute()
 		# add the ingredients of the meals to the "ingredientsToBuy" task
 		for j in range(len(menu[1][i])):
 			#check if the ingredient has already been added to the task
