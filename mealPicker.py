@@ -10,7 +10,7 @@ import requests
 
 # If modifying these scopes, delete the file token.pickle.
 SCOPES = ['https://www.googleapis.com/auth/tasks']
-notion_token = "38ebd3794b4cdc628bf37b32ed052f75e7b8d502ddc0a76b3fdf04800ce2abaec1ff84ac7c7946a4a306109c816b659a408fa5271fa6ed060cfd5401fb36f88e8878afb443fa98e1f66c19f0355b"
+notion_token = ""
 
 def computeUpTick():
 	# load the data from a csv file
