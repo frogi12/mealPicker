@@ -211,13 +211,13 @@ def uploadTasks():
 def uploadNotion():
 	menu = pickMenu("meals.csv")
 	
-	token = "secret_JwtPjqhfnPrc4Ad4yMQCI7r36tYSQcaB079N0pSeoxx"
+	token = ""
 
-	database_id = "5890971800e742f1b45bf30b3571be56"
+	database_id = ""
 	
-#	token = "secret_w3VET7hX9wGuJAAtY3nHEIPUHEEHlO2ZwxfQKUBJIvm"
+#	token = ""
 
-#	database_id = "0090b32b3cfa4576a93807679b20d9be"
+#	database_id = ""
 	
 	headers = {
 		"Authorization"		: "Bearer " + token,
