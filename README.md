@@ -17,4 +17,3 @@ easily use on my phone (I integrated google Tasks API as well as Notion API).
 
 Alongside the sript I also built a personal collection of recipies and ingredients, which is 
 also quite convenient on its own. This collection is also included in the project.
-
