@@ -13,8 +13,7 @@ all meals in the day.
 The script had different verions and the current one does pretty much all I ever wanted from
 it. It implements my "rule" to pick foods I haven't had in a while, accounts for the comlexity
 and the environmental impact of the meals, and integrates with a web service that I can 
-easily use on my phone (I initially wanted to do this in google Keep, but there is no 
-official API for this google service, so I went with google Tasks instead).
+easily use on my phone (I integrated google Tasks API as well as Notion API).
 
 Alongside the sript I also built a personal collection of recipies and ingredients, which is 
 also quite convenient on its own. This collection is also included in the project.
