@@ -4,7 +4,8 @@ import numpy as np
 import pickle, re, random, argparse, os.path, sys,requests, json
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
-from google.auth.transport.requests import Request
+import google.auth.transport.requests
+import requests
 
 
 # If modifying these scopes, delete the file token.pickle.
@@ -100,7 +101,8 @@ def uploadTasks():
 	if not creds or not creds.valid:
 		# refresh th e credentials if they are expired
 		if creds and creds.expired and creds.refresh_token:
-			creds.refresh(Request())
+			request = google.auth.transport.requests.Request()
+			creds.refresh(request)
 		# connect to the server using the personal token
 		else:
 			flow = InstalledAppFlow.from_client_secrets_file('tokens/foodPickerCred.json', SCOPES)
@@ -209,13 +211,13 @@ def uploadTasks():
 def uploadNotion():
 	menu = pickMenu("meals.csv")
 	
-#	token = "ask Karl"
+	token = "secret_JwtPjqhfnPrc4Ad4yMQCI7r36tYSQcaB079N0pSeoxx"
 
-#	database_id = "ed5a5dce5e36494f8e95ebb955ae21dc"
+	database_id = "5890971800e742f1b45bf30b3571be56"
 	
-	token = "secret_w3VET7hX9wGuJAAtY3nHEIPUHEEHlO2ZwxfQKUBJIvm"
+#	token = "secret_w3VET7hX9wGuJAAtY3nHEIPUHEEHlO2ZwxfQKUBJIvm"
 
-	database_id = "0090b32b3cfa4576a93807679b20d9be"
+#	database_id = "0090b32b3cfa4576a93807679b20d9be"
 	
 	headers = {
 		"Authorization"		: "Bearer " + token,
@@ -257,7 +259,7 @@ def read_database(database_id, headers):
 	
 	res = requests.request("POST", read_url, headers = headers)
 	data = res.json()
-	print(res.status_code)
+	#	print(res.status_code)
 	
 	with open("./db.json", "w", encoding = "utf8") as f:
 		json.dump(data, f, ensure_ascii = False)
@@ -325,8 +327,8 @@ def update_page(database_id, headers, page_id):
 	
 	res = requests.request("PATCH", update_url, headers = headers, data = data)
 	
-	print(res.status_code)
-	print(res.text)
+#	print(res.status_code)
+#	print(res.text)
 
 def main(argv):
 	parser = argparse.ArgumentParser(
